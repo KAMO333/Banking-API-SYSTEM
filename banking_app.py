@@ -36,9 +36,16 @@ def index():
         user_id = request.form.get("user_id")
         password = request.form.get("password")
 
-        user = Account.query.filter_by(email=email).first()
+        try:
+            user = Account.query.filter_by(email=email).first()
+        except Exception as e:
+            return f"An error occurred while retrieving the user from the database: {str(e)}"
+        
         if user and user.check_password(password):
-            session["user_id"] = user.id
+            try:
+                session["user_id"] = user.id
+            except Exception as e:
+                return f"An error occurred while setting the session: {str(e)}"
             return redirect(url_for("home_page"))
         else:
             return "Invalid email or password"
@@ -56,33 +63,29 @@ def create_account():
 
         print(f"Received - Name: {name}, Email: {email}, User ID: {user_id}, Password: {password}")
 
-        user_exist_email = Account.query.filter_by(email=email).first()
-        if user_exist_email:
-            return render_template("create_account.html", error="An account with this email already exist. Please use a different email")
+        try:
+            user_exist_email = Account.query.filter_by(email=email).first()
+            if user_exist_email:
+                return render_template("create_account.html", error="An account with this email already exist. Please use a different email")
         
-        user_exist_id = Account.query.filter_by(user_id=user_id).first()
-        if user_exist_id:
-            return render_template("create_account", error="An account with this ID already exist.")
+            user_exist_id = Account.query.filter_by(user_id=user_id).first()
+            if user_exist_id:
+                return render_template("create_account", error="An account with this ID already exist.")
             
-        new_account = Account(name=name, email=email, user_id=user_id)
-        new_account.set_password(password)
+            new_account = Account(name=name, email=email, user_id=user_id)
+            new_account.set_password(password)
 
 
-        db.session.add(new_account)
-        db.session.commit()
+            db.session.add(new_account)
+            db.session.commit()
 
-        session["user_id"] = new_account.id
-        return redirect(url_for("home_page"))
-
-            # account_saved = Account.query.filter_by(email=email).first()
-            # if account_saved:
-            #     return f"Account for {account_saved} has been successfully created"
-            # return "An error occurred while verufing the account"
+            session["user_id"] = new_account.id
+            return redirect(url_for("home_page"))
         
-        # except Exception as e:
-        #     db.session.rollback()
-        #     print(f"error occured: {e}")
-        #     return f"An error occured while creating the account, Error {e}"
+        except Exception as e:
+            db.session.rollback()
+            print(f"error occured: {e}")
+            return f"An error occured while creating the account, Error {e}"
 
     return render_template("create_account.html")
 
