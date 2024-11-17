@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block head %}
+<title>Dashboard - Banking API System</title>
+{% endblock %}
+
+{% block body %}
+<div class="content">
+  <div class="container">
+    <div class="right">
+      <div class="title">Welcome to Your Dashboard, {{ user.name }}!</div>
+      <div class="account-details">
+        <p><strong>Email:</strong> {{ user.email }}</p>
+        <p><strong>Balance:</strong> ${{ user.balance }}</p>
+      </div>
+
+      <div class="footer">
+        <p><a href="{{ url_for('create_account') }}">Create Account</a></p>
+        <p><a href="{{ url_for('update_account') }}">Update Account</a></p>
+        <p><a href="{{ url_for('delete_account') }}">Delete Account</a></p>
+        <p><a href="{{ url_for('transactions') }}">Transactions</a></p>
+        <p><a href="{{ url_for('index') }}">Logout</a></p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
