@@ -2,18 +2,77 @@
 
 {% block head %}
 <title>Dashboard - Banking API System</title>
+
+<style>
+body {
+  background-color: #2e2e2e;
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  color: #ffffff;
+}
+
+.content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.container {
+  display: flex;
+  width: 80%;
+  background-color: #000000;
+  border: 2px solid #333333;
+  padding: 20px;
+  border-radius: 8px;
+}
+
+.left {
+  width: 30%;
+  padding-right: 20px;
+}
+
+.right {
+  width: 70%; 
+  text-align: center;
+}
+
+.title {
+  font-size: 24px;
+  margin-bottom: 20px;
+  font-weight: bold;
+  color: #f1f1f1;
+}
+
+.account-details {
+  font-size: 18px;
+  color: #f1f1f1;
+}
+
+.footer {
+  margin-top: 20px;
+  background-color: #111111;
+  color: #ffffff;
+  padding: 10px;
+  border-radius: 4px;
+}
+
+.footer a {
+  color: #f1f1f1;
+  text-decoration: none;
+}
+
+.footer a:hover {
+  text-decoration: underline;
+}
+</style>
 {% endblock %}
 
 {% block body %}
 <div class="content">
   <div class="container">
-    <div class="right">
-      <div class="title">Welcome to Your Dashboard, {{ user.name }}!</div>
-      <div class="account-details">
-        <p><strong>Email:</strong> {{ user.email }}</p>
-        <p><strong>Balance:</strong> ${{ user.balance }}</p>
-      </div>
-
+    <div class="left">
       <div class="footer">
         <p><a href="{{ url_for('create_account') }}">Create Account</a></p>
         <p><a href="{{ url_for('update_account') }}">Update Account</a></p>
@@ -22,7 +81,16 @@
         <p><a href="{{ url_for('index') }}">Logout</a></p>
       </div>
     </div>
+
+    <div class="right">
+      <div class="title">Welcome to Your Dashboard, {{ user.name }}!</div>
+      <div class="account-details">
+        <p><strong>Email:</strong> {{ user.email }}</p>
+        <p><strong>Balance:</strong> ${{ user.balance }}</p>
+      </div>
+    </div>
   </div>
 </div>
 {% endblock %}
+
 
