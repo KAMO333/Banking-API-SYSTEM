@@ -43,7 +43,7 @@ def index():
         
         if user and user.check_password(password):
             try:
-                session["user_id"] = user.id
+                session["user_id"] = user_id
             except Exception as e:
                 return f"An error occurred while setting the session: {str(e)}"
             return redirect(url_for("home_page"))
@@ -101,9 +101,28 @@ def home_page():
 def update_account():
     return "This is a placeholder for the update account functionality."
 
-@app.route("/delete_account")
+@app.route("/delete_account", methods=["GET"])
 def delete_account():
-    return "This is a placeholder for the delete account functionality."
+    if request.method == "GET":
+        name = request.form.get("name")
+        email = request.form.get("email")
+        user_id = request.form.get("user_id")
+        password = request.form.get("password")
+
+        print(f"Received - Name: {name}, Email: {email}, User ID: {user_id}, Password: {password}")
+
+        try:
+            user_exist_email = Account.query.filter_by(email=email).first()
+            if not user_exist_email:
+                return render_template("create_account.html", error="email does not exist")
+        
+            user_exist_id = Account.query.filter_by(user_id=user_id).first()
+            if not user_exist_id:
+                return render_template("create_account", error="An account with this ID does not  exist.")
+
+        except: 
+            pass
+    return render_template("Delete_account.html")
 
 @app.route("/transactions")
 def transactions():
