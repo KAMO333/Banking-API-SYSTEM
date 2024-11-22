@@ -33,43 +33,31 @@ class Account(db.Model):
 def index():
     if request.method == "POST":
         email = request.form.get("email")
-        user_id = request.form.get("user_id")
         password = request.form.get("password")
 
-        try:
-            user = Account.query.filter_by(email=email).first()
-        except Exception as e:
-            return f"An error occurred while retrieving the user from the database: {str(e)}"
-        
+        user = Account.query.filter_by(email=email).first()
         if user and user.check_password(password):
-            try:
-                session["user_id"] = user.id
-            except Exception as e:
-                return f"An error occurred while setting the session: {str(e)}"
+            session["user_id"] = user.id
             return redirect(url_for("home_page"))
         else:
-            return "Invalid email or password"
-        
+            return render_template("index.html", error="Invalid email or password")
+
     return render_template("index.html")
 
 
-@app.route("/create_account", methods=["GET", "POST"])
+@app.route("/create_account", methods=["POST"])
 def create_account():
-    if request.method == "POST":
         name = request.form.get("name")
         email = request.form.get("email")
         user_id = request.form.get("user_id")
         password = request.form.get("password")
 
-        print(f"Received - Name: {name}, Email: {email}, User ID: {user_id}, Password: {password}")
 
         try:
-            user_exist_email = Account.query.filter_by(email=email).first()
-            if user_exist_email:
+            if Account.query.filter_by(email=email).first():
                 return render_template("create_account.html", error="An account with this email already exist. Please use a different email")
         
-            user_exist_id = Account.query.filter_by(user_id=user_id).first()
-            if user_exist_id:
+            if Account.query.filter_by(user_id=user_id).first():
                 return render_template("create_account", error="An account with this ID already exist.")
             
             new_account = Account(name=name, email=email, user_id=user_id)
@@ -84,18 +72,54 @@ def create_account():
         
         except Exception as e:
             db.session.rollback()
-            print(f"error occured: {e}")
-            return f"An error occured while creating the account, Error {e}"
+            return render_template("create_account.html", error=f"An error occurred: {e}")
 
-    return render_template("create_account.html")
-
-@app.route("/home_page")
+@app.route("/home_page", methods=["GET"])
 def home_page():
     if "user_id" not in session:
         return redirect(url_for("index"))
     
     user = Account.query.get(session["user_id"])
     return render_template("home_page.html", user=user)
+
+
+@app.route('/withdraw', methods=["POST"])
+def withdraw():
+    if "user_id" not in session:
+        return redirect(url_for("index"))
+    
+    user = Account.query.get(session["user_id"])
+    amount_str = request.form.get("amount")
+
+    if not amount_str:
+        return render_template("withdraw.html", user=user, error="Please enter an amount.")
+
+    try:
+        amount = float(amount_str)
+    except ValueError:
+        return render_template("withdraw.html", user=user, error="Invalid amount entered.")
+
+    if amount > user.balance:
+        render_template("withdraw.html", user=user, error="Insufficient funds")
+
+    user.balance -= amount
+
+    try:
+        db.session.commit()
+
+        return redirect(url_for("home_page"))
+        
+    except Exception as e:
+            db.session.rollback()
+            return render_template("create_account.html", error=f"An error occurred: {e}")
+
+
+
+@app.route('/deposit')
+def deposit():
+    # Logic for deposit action
+    return render_template('deposit.html')
+
 
 @app.route("/update_account", methods=["GET", "POST"])
 def update_account():

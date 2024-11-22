@@ -1,0 +1,113 @@
+{% extends "base.html" %} {% block head %}
+<title>Withdraw - Banking API System</title>
+
+<style>
+  body {
+    background-color: #2e2e2e;
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    color: #ffffff;
+  }
+
+  .content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+
+  .container {
+    display: flex;
+    width: 80%;
+    background-color: #000000;
+    border: 2px solid #333333;
+    padding: 20px;
+    border-radius: 8px;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .title {
+    font-size: 24px;
+    margin-bottom: 20px;
+    font-weight: bold;
+    color: #f1f1f1;
+  }
+
+  .form-container {
+    width: 100%;
+    max-width: 500px;
+  }
+
+  .form-container input {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 4px;
+    border: 1px solid #333333;
+    background-color: #444444;
+    color: #ffffff;
+  }
+
+  .form-container button {
+    width: 100%;
+    padding: 10px;
+    background-color: #444444;
+    color: #ffffff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  .form-container button:hover {
+    background-color: #666666;
+  }
+
+  .account-details {
+    font-size: 18px;
+    color: #f1f1f1;
+    margin-top: 20px;
+  }
+
+  .footer {
+    margin-top: 20px;
+    background-color: #111111;
+    color: #ffffff;
+    padding: 10px;
+    border-radius: 4px;
+  }
+
+  .footer a {
+    color: #f1f1f1;
+    text-decoration: none;
+  }
+
+  .footer a:hover {
+    text-decoration: underline;
+  }
+</style>
+{% endblock %} {% block body %}
+<div class="content">
+  <div class="container">
+    <div class="title">Withdraw Funds</div>
+
+    <div class="account-details">
+      <p><strong>Email:</strong> {{ user.email }}</p>
+      <p><strong>Balance:</strong> ${{ user.balance }}</p>
+    </div>
+
+    <div class="form-container">
+      <form action="{{ url_for('withdraw') }}" method="POST">
+        <label for="amount">Amount to Withdraw:</label>
+        <input type="text" id="amount" name="amount" required />
+        <button type="submit">Withdraw</button>
+      </form>
+    </div>
+
+    <div class="footer">
+      <p><a href="{{ url_for('home_page') }}">Back to Dashboard</a></p>
+    </div>
+  </div>
+</div>
+{% endblock %}
