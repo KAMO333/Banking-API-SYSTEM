@@ -1,20 +1,16 @@
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import Flask, render_template, request, redirect, url_for, session, flash
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.dialects.sqlite import JSON
 from flask_migrate import Migrate
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask import flash
 import os
-import json
 
-
-app = Flask(__name__,template_folder="./templates")
+app = Flask(__name__, template_folder="./templates")
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///banking.db"
 app.config["SECRET_KEY"] = os.urandom(24)
 db = SQLAlchemy(app)
 
 migrate = Migrate(app, db)
-
 
 class Account(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -23,14 +19,12 @@ class Account(db.Model):
     email = db.Column(db.String(100), index=True, unique=True, nullable=False)
     balance = db.Column(db.Float, default=0.0)
     password_hash = db.Column(db.String(128), nullable=False)
-    # initialize and empty list of transactions
-    transactions = db.Column(JSON, default=list)
+    # Initialize an empty list of transactions
+    transactions = db.Column(JSON, default=list)  
 
-    # retrieves the current list of transactions for the account.
     def get_transactions(self):
         return self.transactions
-    
-    # used to update or set the list of transactions for an account
+
     def set_transactions(self, transaction_list):
         self.transactions = transaction_list
 
@@ -41,7 +35,7 @@ class Account(db.Model):
         return check_password_hash(self.password_hash, password)
 
     def __repr__(self):
-        return '<Account %r, Balance %r>' % (self.id, self.balance)
+        return f'<Account {self.id}, Balance {self.balance}>'
 
 @app.route("/", methods=["GET", "POST"])
 def index():
@@ -58,35 +52,31 @@ def index():
 
     return render_template("index.html")
 
-
 @app.route("/create_account", methods=["POST"])
 def create_account():
-        name = request.form.get("name")
-        email = request.form.get("email")
-        user_id = request.form.get("user_id")
-        password = request.form.get("password")
+    name = request.form.get("name")
+    email = request.form.get("email")
+    user_id = request.form.get("user_id")
+    password = request.form.get("password")
 
-
-        try:
-            if Account.query.filter_by(email=email).first():
-                return render_template("create_account.html", error="An account with this email already exist. Please use a different email")
+    try:
+        if Account.query.filter_by(email=email).first():
+            return render_template("create_account.html", error="An account with this email already exists. Please use a different email.")
         
-            if Account.query.filter_by(user_id=user_id).first():
-                return render_template("create_account", error="An account with this ID already exist.")
-            
-        new_account = Account(name=name, email=email, user_id=user_id, transactions=transactions)
+        if Account.query.filter_by(user_id=user_id).first():
+            return render_template("create_account.html", error="An account with this ID already exists.")
+        
+        new_account = Account(name=name, email=email, user_id=user_id, transactions=[])
         new_account.set_password(password)
-
-        new_account.set_transactions()
         db.session.add(new_account)
         db.session.commit()
 
-            session["user_id"] = new_account.id
-            return redirect(url_for("home_page"))
-        
-        except Exception as e:
-            db.session.rollback()
-            return render_template("create_account.html", error=f"An error occurred: {e}")
+        session["user_id"] = new_account.id
+        return redirect(url_for("home_page"))
+    
+    except Exception as e:
+        db.session.rollback()
+        return render_template("create_account.html", error=f"An error occurred: {e}")
 
 @app.route("/home_page", methods=["GET"])
 def home_page():
@@ -96,10 +86,11 @@ def home_page():
     user = Account.query.get(session["user_id"])
     return render_template("home_page.html", user=user)
 
-@app.route('/withdraw', methods=["POST"])
+@app.route("/withdraw", methods=["POST"])
 def withdraw():
     if "user_id" not in session:
         return redirect(url_for("index"))
+    
     user = Account.query.get(session["user_id"])
     amount_str = request.form.get("amount")
 
@@ -115,24 +106,21 @@ def withdraw():
 
     if amount > user.balance:
         flash("Insufficient funds.", "error")
-        render_template("withdraw.html", user=user, error="Insufficient funds")
+        return render_template("withdraw.html", user=user, error="Insufficient funds")
 
     user.balance -= amount
 
     try:
         db.session.commit()
-        flash("Withdrawal succesful!", "success")
+        flash("Withdrawal successful!", "success")
         return redirect(url_for("home_page"))
-
     except Exception as e:
-            db.session.rollback()
-            return render_template("create_account.html", error=f"An error occurred: {e}")
+        db.session.rollback()
+        return render_template("withdraw.html", user=user, error=f"An error occurred: {e}")
 
-
-@app.route('/deposit')
+@app.route("/deposit")
 def deposit():
-    # Logic for deposit action
-    return render_template('deposit.html')
+    return render_template("deposit.html")
 
 @app.route("/update_account", methods=["GET", "POST"])
 def update_account():
@@ -151,25 +139,24 @@ def delete_account():
         try:
             user_exist_email = Account.query.filter_by(email=email).first()
             if not user_exist_email:
-                return render_template("create_account.html", error="email does not exist")
+                return render_template("delete_account.html", error="Email does not exist")
         
             user_exist_id = Account.query.filter_by(user_id=user_id).first()
             if not user_exist_id:
-                return render_template("create_account", error="An account with this ID does not  exist.")
+                return render_template("delete_account.html", error="An account with this ID does not exist.")
 
-        except: 
+        except Exception:
             pass
-    return render_template("Delete_account.html")
+
+    return render_template("delete_account.html")
 
 @app.route("/transactions")
 def transactions():
     return "This is a placeholder for the transactions functionality."
 
-
 @app.route("/view_balance", methods=["GET", "POST"])
 def view_balance():
     return render_template("view_balance.html")
-
 
 if __name__ == "__main__":
     app.run(debug=True)
