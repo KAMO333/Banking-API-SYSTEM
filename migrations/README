@@ -1,1 +1,2 @@
 Single-database configuration for Flask.
+Added migration to update table as we wish.
