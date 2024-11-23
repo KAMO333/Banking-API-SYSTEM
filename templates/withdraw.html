@@ -1,4 +1,6 @@
-{% extends "base.html" %} {% block head %}
+{% extends "base.html" %}
+
+{% block head %}
 <title>Withdraw - Banking API System</title>
 
 <style>
@@ -87,15 +89,27 @@
     text-decoration: underline;
   }
 </style>
-{% endblock %} {% block body %}
+{% endblock %}
+
+{% block body %}
 <div class="content">
   <div class="container">
     <div class="title">Withdraw Funds</div>
 
     <div class="account-details">
-      <p><strong>Email:</strong> {{ user.email }}</p>
+      <p><strong>Welcome,</strong> {{ user.email }}</p>
       <p><strong>Balance:</strong> ${{ user.balance }}</p>
     </div>
+
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+    <div class="flash-messages">
+      {% for message in messages %}
+      <p style="color: red">{{ message }}</p>
+      {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
 
     <div class="form-container">
       <form action="{{ url_for('withdraw') }}" method="POST">
