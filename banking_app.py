@@ -1,9 +1,11 @@
 from flask import Flask, render_template, request, redirect, url_for, session
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.dialects.sqlite import JSON
 from flask_migrate import Migrate
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask import flash
 import os
+import json
 
 
 app = Flask(__name__,template_folder="./templates")
@@ -21,6 +23,16 @@ class Account(db.Model):
     email = db.Column(db.String(100), index=True, unique=True, nullable=False)
     balance = db.Column(db.Float, default=0.0)
     password_hash = db.Column(db.String(128), nullable=False)
+    # initialize and empty list of transactions
+    transactions = db.Column(JSON, default=list)
+
+    # retrieves the current list of transactions for the account.
+    def get_transactions(self):
+        return self.transactions
+    
+    # used to update or set the list of transactions for an account
+    def set_transactions(self, transaction_list):
+        self.transactions = transaction_list
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -62,12 +74,12 @@ def create_account():
             if Account.query.filter_by(user_id=user_id).first():
                 return render_template("create_account", error="An account with this ID already exist.")
             
-            new_account = Account(name=name, email=email, user_id=user_id)
-            new_account.set_password(password)
+        new_account = Account(name=name, email=email, user_id=user_id, transactions=transactions)
+        new_account.set_password(password)
 
-
-            db.session.add(new_account)
-            db.session.commit()
+        new_account.set_transactions()
+        db.session.add(new_account)
+        db.session.commit()
 
             session["user_id"] = new_account.id
             return redirect(url_for("home_page"))
