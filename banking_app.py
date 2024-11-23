@@ -12,6 +12,7 @@ db = SQLAlchemy(app)
 
 migrate = Migrate(app, db)
 
+
 class Account(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.String(13), unique=True, nullable=True)
@@ -77,11 +78,11 @@ def create_account():
             # account_saved = Account.query.filter_by(email=email).first()
             # if account_saved:
             #     return f"Account for {account_saved} has been successfully created"
-            # return "An error occurred while verufing the account"
+            # return "An error occurred while verifying the account"
         
         # except Exception as e:
         #     db.session.rollback()
-        #     print(f"error occured: {e}")
+        #     print(f"error occurred: {e}")
         #     return f"An error occured while creating the account, Error {e}"
 
     return render_template("create_account.html")
